@@ -4,30 +4,28 @@ from typing import List, Dict
 class GorillaPlugin:
     _cli_path: str
     _env_info: Dict[str, str]
+    _working_directory: str = None
 
     """A plugin that uses the Gorilla CLI to perform a series of executions based on a natural language query or high level overview of the user's problem."""
 
 
+    def set_working_directory(self, directory: str) -> None:
+        """
+        Sets the working directory for the environment.
+        """
+        self._working_directory = directory
+
     def collect_environment_info(self) -> None:
         """
-        Collects information about the environment where the commands are executed.
+        Collects information about the environment where the commands are executed, including the file structure.
         """
-        uname_command = "uname -a"  # This is for Unix-like systems, for Windows use 'systeminfo'
-        try:
-            process = subprocess.Popen(
-                uname_command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-            stdout, stderr = process.communicate()
-
-            if process.returncode == 0:
-                self._env_info['uname'] = stdout.decode().strip()
-            else:
-                self._env_info['uname'] = f"Error collecting environment info: {stderr.decode().strip()}"
-        except Exception as e:
-            self._env_info['uname'] = f"Exception collecting environment info: {str(e)}"
+        self._env_info = {}
+        if self._working_directory:
+            try:
+                for root, dirs, files in os.walk(self._working_directory):
+                    self._env_info[root] = dirs + files
+            except Exception as e:
+                self._env_info['error'] = f"Exception collecting file structure: {str(e)}"
 
     def compare_environment_info(self, initial_env_info: Dict[str, str], updated_env_info: Dict[str, str]) -> Dict[str, str]:
         """
@@ -68,7 +66,11 @@ class GorillaPlugin:
 
             cli_command = stdout.decode().strip()
             queued_commands.append(cli_command)
-        return queued_commands
+        # Return both the queued commands and the environment information
+        return {
+            'queued_commands': queued_commands,
+            'environment_info': self._env_info
+        }
 
     async def execute_commands(self, cli_commands: List[str]):
         """
