@@ -42,7 +42,7 @@ def execute_joke():
     return execute_semantic_function("FunSkill", "Joke")
 
 @app.route("/gorilla/queue-commands", methods=["POST"])
-async def queue_gorilla_commands():
+def queue_gorilla_commands():
     from .gorilla_plugin import GorillaPlugin
     import json
 
@@ -54,7 +54,7 @@ async def queue_gorilla_commands():
     natural_language_commands = data.get('commands', [])
 
     # Process the input and queue CLI commands
-    queued_commands = await gorilla_plugin.queue_commands(natural_language_commands)
+    queued_commands = gorilla_plugin.queue_commands(natural_language_commands)
 
     # Return the queued commands as a JSON response
     return json.dumps(queued_commands), 200

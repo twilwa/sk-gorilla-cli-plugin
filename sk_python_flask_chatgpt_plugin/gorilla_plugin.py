@@ -1,5 +1,4 @@
-import asyncio
-import asyncio.subprocess as subprocess
+import subprocess
 from typing import List, Dict
 
 class GorillaPlugin:
@@ -9,18 +8,19 @@ class GorillaPlugin:
     """A plugin that uses the Gorilla CLI to perform a series of executions based on a natural language query or high level overview of the user's problem."""
 
 
-    async def collect_environment_info(self) -> None:
+    def collect_environment_info(self) -> None:
         """
         Collects information about the environment where the commands are executed.
         """
         uname_command = "uname -a"  # This is for Unix-like systems, for Windows use 'systeminfo'
         try:
-            process = await subprocess.create_subprocess_shell(
+            process = subprocess.Popen(
                 uname_command,
+                shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
-            stdout, stderr = await process.communicate()
+            stdout, stderr = process.communicate()
 
             if process.returncode == 0:
                 self._env_info['uname'] = stdout.decode().strip()
@@ -42,7 +42,7 @@ class GorillaPlugin:
             if value != updated_env_info.get(key)
         }
 
-    async def queue_commands(self, natural_language_commands: List[str]) -> List[str]:
+    def queue_commands(self, natural_language_commands: List[str]) -> List[str]:
         """
         Processes natural language commands and queues them for execution after user confirmation.
         """
@@ -50,12 +50,13 @@ class GorillaPlugin:
         for nl_command in natural_language_commands:
             # Pass the natural language command to the Gorilla CLI and get the CLI command
             try:
-                process = await subprocess.create_subprocess_shell(
+                process = subprocess.Popen(
                     f"{self._cli_path} \"{nl_command}\"",
+                    shell=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE
                 )
-                stdout, stderr = await process.communicate()
+                stdout, stderr = process.communicate()
 
                 if process.returncode != 0:
                     print(f"Failed to get CLI command for: {nl_command}")
