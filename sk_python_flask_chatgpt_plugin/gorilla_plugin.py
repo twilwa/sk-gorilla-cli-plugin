@@ -1,4 +1,5 @@
 import subprocess
+import os
 from typing import List, Dict
 
 class GorillaPlugin:
@@ -66,11 +67,33 @@ class GorillaPlugin:
 
             cli_command = stdout.decode().strip()
             queued_commands.append(cli_command)
+        # Option to dump commands to a script instead of executing
+        self.dump_commands_to_script(queued_commands)
+
         # Return both the queued commands and the environment information
         return {
             'queued_commands': queued_commands,
             'environment_info': self._env_info
         }
+
+    def dump_commands_to_script(self, cli_commands: List[str], filename: str = "gorilla_commands") -> None:
+        """
+        Dumps the queued CLI commands into a script file.
+        """
+        # Determine the script file extension based on the operating system
+        script_extension = 'sh' if os.name == 'posix' else 'bat'
+        full_filename = f"{filename}.{script_extension}"
+
+        # Write the commands to the script file
+        with open(full_filename, 'w') as script_file:
+            if script_extension == 'sh':
+                script_file.write("#!/bin/sh\n\n")
+            for command in cli_commands:
+                script_file.write(f"{command}\n")
+            if script_extension == 'bat':
+                script_file.write("pause\n")
+
+        print(f"Commands dumped to script: {full_filename}")
 
     async def execute_commands(self, cli_commands: List[str]):
         """
