@@ -54,9 +54,7 @@ def queue_gorilla_commands():
     # Get the natural language command from the request
     data = request.get_json()
     natural_language_command = data.get('command', '')
-    api_endpoint_url = request.args.get('api_endpoint', None)
-
-    if api_endpoint_url:
+    if api_endpoint_url := request.args.get('api_endpoint', None):
         # Send the natural language command to the provided API endpoint
         response = requests.post(api_endpoint_url, json={'command': natural_language_command})
         if response.status_code != 200:
