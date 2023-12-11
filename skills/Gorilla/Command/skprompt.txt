@@ -1,0 +1,3 @@
+Generate a command line instruction based on the given natural language description of a task.
+
+Description:{{$input}}

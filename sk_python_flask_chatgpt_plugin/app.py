@@ -48,8 +48,9 @@ def queue_gorilla_commands():
     import json
     import requests
 
-    # Initialize GorillaPlugin with the path to the Gorilla CLI
-    gorilla_plugin = GorillaPlugin(cli_path=os.getenv('GORILLA_CLI_PATH'))
+    # Initialize GorillaPlugin with the path to the Gorilla CLI from HTTP header or environment variable
+    gorilla_cli_path = request.headers.get('x-gorilla-cli-path', os.getenv('GORILLA_CLI_PATH'))
+    gorilla_plugin = GorillaPlugin(cli_path=gorilla_cli_path)
 
     # Get the natural language command from the request
     data = request.get_json()
