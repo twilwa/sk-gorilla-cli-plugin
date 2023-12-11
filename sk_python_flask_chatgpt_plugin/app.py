@@ -41,11 +41,10 @@ def execute_semantic_function(skill_name, function_name):
 def execute_joke():
     return execute_semantic_function("FunSkill", "Joke")
 
-@app.route("/gorilla/queue-commands/<api_endpoint_url>", methods=["POST"])
-def queue_gorilla_commands(api_endpoint_url):
+@app.route("/gorilla/queue-commands", methods=["POST"])
+def queue_gorilla_commands():
     from .gorilla_plugin import GorillaPlugin
     import json
-    import requests
 
     # Initialize GorillaPlugin with the path to the Gorilla CLI
     gorilla_plugin = GorillaPlugin(cli_path=os.getenv('GORILLA_CLI_PATH'))
@@ -54,13 +53,8 @@ def queue_gorilla_commands(api_endpoint_url):
     data = request.get_json()
     natural_language_command = data.get('command', '')
 
-    # Send the natural language command to the provided API endpoint
-    response = requests.post(api_endpoint_url, json={'command': natural_language_command})
-    if response.status_code != 200:
-        return f"Failed to get commands from API endpoint. Status code: {response.status_code}", 500
-
-    # Process the response and queue CLI commands
-    queued_commands = gorilla_plugin.queue_commands(response.json().get('commands', []))
+    # Process the natural language command and queue CLI commands
+    queued_commands = gorilla_plugin.queue_commands([natural_language_command])
 
     # Return the queued commands as a JSON response
     return json.dumps(queued_commands), 200
