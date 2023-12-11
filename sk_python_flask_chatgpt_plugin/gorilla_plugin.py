@@ -1,6 +1,8 @@
+import asyncio
 import subprocess
 import os
 from typing import List, Dict
+import sys
 
 class GorillaPlugin:
     _cli_path: str
@@ -149,9 +151,12 @@ async def confirm_and_execute_commands(gorilla_plugin: GorillaPlugin, queued_com
     # If confirmed, execute the commands
     await gorilla_plugin.execute_commands(queued_commands)
 
-async def main():
-    # Example user input
-    user_input = "Generate a report from yesterday's logs and email it to the team"
+async def main(argv):
+    # Get user input from command-line arguments
+    if len(argv) < 2:
+        print("Usage: python gorilla_plugin.py '<command>'")
+        return
+    user_input = argv[1]
 
     # Initialize GorillaPlugin with the path to the Gorilla CLI
     import os
@@ -164,4 +169,4 @@ async def main():
     await confirm_and_execute_commands(gorilla_plugin, queued_commands)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main(sys.argv))
