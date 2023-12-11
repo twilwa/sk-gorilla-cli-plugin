@@ -96,7 +96,7 @@ class GorillaPlugin:
 
         print(f"Commands dumped to script: {full_filename}")
 
-    async def execute_commands(self, cli_commands: List[str]):
+    def execute_commands(self, cli_commands: List[str]):
         """
         Executes a list of CLI commands after user confirmation.
         """
@@ -107,17 +107,17 @@ class GorillaPlugin:
             return
 
         # Collect initial environment info
-        await self.collect_environment_info()
+        self.collect_environment_info()
         initial_env_info = self._env_info.copy()
 
         for cli_command in cli_commands:
             # Execute the CLI command using subprocess
-            process = await subprocess.create_subprocess_shell(
+            process = subprocess.Popen(
                 cli_command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
-            stdout, stderr = await process.communicate()
+            stdout, stderr = process.communicate()
 
             if process.returncode == 0:
                 print(f"Command executed successfully: {cli_command}")
@@ -127,7 +127,7 @@ class GorillaPlugin:
                 print(f"Error: {stderr.decode().strip()}")
 
             # Collect updated environment info
-            await self.collect_environment_info()
+            self.collect_environment_info()
             updated_env_info = self._env_info.copy()
 
             if env_changes := self.compare_environment_info(
@@ -137,7 +137,7 @@ class GorillaPlugin:
                 for key, change in env_changes.items():
                     print(f"{key}: from '{change['initial']}' to '{change['updated']}'")
 
-async def confirm_and_execute_commands(gorilla_plugin: GorillaPlugin, queued_commands: List[str]):
+def confirm_and_execute_commands(gorilla_plugin: GorillaPlugin, queued_commands: List[str]):
     """
     Confirms with the user before executing queued commands.
     """
@@ -148,7 +148,7 @@ async def confirm_and_execute_commands(gorilla_plugin: GorillaPlugin, queued_com
         return
 
     # If confirmed, execute the commands
-    await gorilla_plugin.execute_commands(queued_commands)
+    gorilla_plugin.execute_commands(queued_commands)
 
 def main(argv):
     # Get user input and API endpoint URL from command-line arguments
@@ -163,10 +163,10 @@ def main(argv):
     gorilla_plugin = GorillaPlugin(cli_path=os.getenv('GORILLA_CLI_PATH'))
 
     # Process the input and queue CLI commands
-    queued_commands = await gorilla_plugin.queue_commands([user_input])
+    queued_commands = gorilla_plugin.queue_commands([user_input])
 
     # Confirm and execute commands
-    await confirm_and_execute_commands(gorilla_plugin, queued_commands)
+    confirm_and_execute_commands(gorilla_plugin, queued_commands)
 
 if __name__ == "__main__":
     main(sys.argv)

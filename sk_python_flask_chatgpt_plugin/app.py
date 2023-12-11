@@ -59,11 +59,8 @@ def queue_gorilla_commands(api_endpoint_url):
     if response.status_code != 200:
         return f"Failed to get commands from API endpoint. Status code: {response.status_code}", 500
 
-    # Process the input and queue CLI commands
-    queued_commands = gorilla_plugin.queue_commands([response.json()])
-
-    # Process the input and queue CLI commands
-    queued_commands = gorilla_plugin.queue_commands(natural_language_commands)
+    # Process the response and queue CLI commands
+    queued_commands = gorilla_plugin.queue_commands(response.json().get('commands', []))
 
     # Return the queued commands as a JSON response
     return json.dumps(queued_commands), 200
