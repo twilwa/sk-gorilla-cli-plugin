@@ -32,7 +32,10 @@ OPENAI_ORG_ID=""
 AZURE_OPENAI_DEPLOYMENT_NAME=""
 AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
+GORILLA_CLI_PATH="/path/to/gorilla-cli" # Path to the Gorilla CLI executable
 ```
+
+Make sure to replace `"/path/to/gorilla-cli"` with the actual path to the Gorilla CLI on your system.
 
 ### Configure with HTTP Headers
 
@@ -85,6 +88,32 @@ curl -X POST \
   -H 'x-ms-sk-completion-backend: AZURE_OPENAI' \
   -H 'x-ms-sk-completion-key: Your API key' \
   -d '{"input": "time traveling to dinosaur age", "style": "wacky"}'
+```
+
+## GorillaPlugin Functionality
+
+The `GorillaPlugin` is integrated into the Flask application to process natural language commands and queue them for execution. It can either send the commands to a specified API endpoint or process them locally using the Gorilla CLI, depending on the presence of the `api_endpoint` query parameter in the request.
+
+To use the `GorillaPlugin`, ensure that the `GORILLA_CLI_PATH` environment variable is set to the path of the Gorilla CLI executable on your system.
+
+A POST endpoint exists at `localhost:5050/gorilla/queue-commands` where you can send a JSON payload with the `command` key containing the natural language command. Optionally, you can include the `api_endpoint` query parameter to specify an external API endpoint for processing the command.
+
+For example:
+
+```
+curl -X POST \
+  http://localhost:5050/gorilla/queue-commands \
+  -H 'Content-Type: application/json' \
+  -d '{"command": "list all files in the current directory"}'
+```
+
+If you want to use an external API endpoint:
+
+```
+curl -X POST \
+  http://localhost:5050/gorilla/queue-commands?api_endpoint=http://external-api.com/process \
+  -H 'Content-Type: application/json' \
+  -d '{"command": "list all files in the current directory"}'
 ```
 
 ## Using the starter as a ChatGPT plugin
