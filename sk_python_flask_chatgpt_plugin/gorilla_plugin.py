@@ -3,13 +3,13 @@ import os
 from typing import List, Dict
 import sys
 
+
 class GorillaPlugin:
     _cli_path: str
     _env_info: Dict[str, str]
     _working_directory: str = None
 
     """A plugin that uses the Gorilla CLI to perform a series of executions based on a natural language query or high level overview of the user's problem."""
-
 
     def set_working_directory(self, directory: str) -> None:
         """
@@ -27,16 +27,20 @@ class GorillaPlugin:
                 for root, dirs, files in os.walk(self._working_directory):
                     self._env_info[root] = dirs + files
             except Exception as e:
-                self._env_info['error'] = f"Exception collecting file structure: {str(e)}"
+                self._env_info[
+                    "error"
+                ] = f"Exception collecting file structure: {str(e)}"
 
-    def compare_environment_info(self, initial_env_info: Dict[str, str], updated_env_info: Dict[str, str]) -> Dict[str, str]:
+    def compare_environment_info(
+        self, initial_env_info: Dict[str, str], updated_env_info: Dict[str, str]
+    ) -> Dict[str, str]:
         """
         Compares the initial and updated environment information and returns the differences.
         """
         return {
             key: {
-                'initial': initial_env_info[key],
-                'updated': updated_env_info.get(key),
+                "initial": initial_env_info[key],
+                "updated": updated_env_info.get(key),
             }
             for key, value in initial_env_info.items()
             if value != updated_env_info.get(key)
@@ -51,10 +55,10 @@ class GorillaPlugin:
             # Pass the natural language command to the Gorilla CLI and get the CLI command
             try:
                 process = subprocess.Popen(
-                    f"{self._cli_path} \"{nl_command}\"",
+                    f'{self._cli_path} "{nl_command}"',
                     shell=True,
                     stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE
+                    stderr=subprocess.PIPE,
                 )
                 stdout, stderr = process.communicate()
 
@@ -72,26 +76,25 @@ class GorillaPlugin:
         self.dump_commands_to_script(queued_commands)
 
         # Return both the queued commands and the environment information
-        return {
-            'queued_commands': queued_commands,
-            'environment_info': self._env_info
-        }
+        return {"queued_commands": queued_commands, "environment_info": self._env_info}
 
-    def dump_commands_to_script(self, cli_commands: List[str], filename: str = "gorilla_commands") -> None:
+    def dump_commands_to_script(
+        self, cli_commands: List[str], filename: str = "gorilla_commands"
+    ) -> None:
         """
         Dumps the queued CLI commands into a script file.
         """
         # Determine the script file extension based on the operating system
-        script_extension = 'sh' if os.name == 'posix' else 'bat'
+        script_extension = "sh" if os.name == "posix" else "bat"
         full_filename = f"{filename}.{script_extension}"
 
         # Write the commands to the script file
-        with open(full_filename, 'w') as script_file:
-            if script_extension == 'sh':
+        with open(full_filename, "w") as script_file:
+            if script_extension == "sh":
                 script_file.write("#!/bin/sh\n\n")
             for command in cli_commands:
                 script_file.write(f"{command}\n")
-            if script_extension == 'bat':
+            if script_extension == "bat":
                 script_file.write("pause\n")
 
         print(f"Commands dumped to script: {full_filename}")
@@ -101,8 +104,10 @@ class GorillaPlugin:
         Executes a list of CLI commands after user confirmation.
         """
         # Ask for user confirmation before executing commands
-        user_confirmation = input("Do you want to execute the queued commands? (yes/no): ")
-        if user_confirmation.lower() != 'yes':
+        user_confirmation = input(
+            "Do you want to execute the queued commands? (yes/no): "
+        )
+        if user_confirmation.lower() != "yes":
             print("Execution cancelled by the user.")
             return
 
@@ -113,9 +118,7 @@ class GorillaPlugin:
         for cli_command in cli_commands:
             # Execute the CLI command using subprocess
             process = subprocess.Popen(
-                cli_command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                cli_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
             stdout, stderr = process.communicate()
 
@@ -137,18 +140,22 @@ class GorillaPlugin:
                 for key, change in env_changes.items():
                     print(f"{key}: from '{change['initial']}' to '{change['updated']}'")
 
-def confirm_and_execute_commands(gorilla_plugin: GorillaPlugin, queued_commands: List[str]):
+
+def confirm_and_execute_commands(
+    gorilla_plugin: GorillaPlugin, queued_commands: List[str]
+):
     """
     Confirms with the user before executing queued commands.
     """
     # Ask for user confirmation before executing commands
     user_confirmation = input("Do you want to execute the queued commands? (yes/no): ")
-    if user_confirmation.lower() != 'yes':
+    if user_confirmation.lower() != "yes":
         print("Execution cancelled by the user.")
         return
 
     # If confirmed, execute the commands
     gorilla_plugin.execute_commands(queued_commands)
+
 
 def main(argv):
     # Get user input and API endpoint URL from command-line arguments
@@ -156,17 +163,19 @@ def main(argv):
         print("Usage: python gorilla_plugin.py '<command>' '<api_endpoint_url>'")
         return
     user_input = argv[1]
-    api_endpoint_url = argv[2]
+    argv[2]
 
     # Initialize GorillaPlugin with the path to the Gorilla CLI
     import os
-    gorilla_plugin = GorillaPlugin(cli_path=os.getenv('GORILLA_CLI_PATH'))
+
+    gorilla_plugin = GorillaPlugin(cli_path=os.getenv("GORILLA_CLI_PATH"))
 
     # Process the input and queue CLI commands
     queued_commands = gorilla_plugin.queue_commands([user_input])
 
     # Confirm and execute commands
     confirm_and_execute_commands(gorilla_plugin, queued_commands)
+
 
 if __name__ == "__main__":
     main(sys.argv)
