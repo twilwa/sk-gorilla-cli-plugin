@@ -1,3 +1,9 @@
+"""
+Test suite for testing the Flask application's routes and responses.
+
+This file contains a set of test cases designed to verify the functionality of the Flask application
+exposed by the sk_python_flask_chatgpt_plugin. The tests cover various endpoint behaviors.
+"""
 from unittest import mock
 
 import pytest
@@ -10,6 +16,15 @@ from sk_python_flask_chatgpt_plugin.app import app
     ("InvalidSkill", "TestFunction", {"headers": {"x-skill-name": "InvalidSkill"}}, "Could not find function TestFunction in skill InvalidSkill"),
 ])
 def test_execute_semantic_function(skill_name, function_name, request_data, expected_response):
+    """
+    Test the execution of a semantic function via a POST request.
+    
+    Args:
+        skill_name: The name of the skill to be used for the request.
+        function_name: The name of the function to be executed.
+        request_data: A dictionary containing request headers.
+        expected_response: The expected response data as a string.
+    """
     with mock.patch("sk_python_flask_chatgpt_plugin.app.create_kernel_for_request") as mock_create_kernel:
         mock_create_kernel.return_value = (mock.MagicMock(), None)
         with app.test_client() as client:
@@ -17,6 +32,9 @@ def test_execute_semantic_function(skill_name, function_name, request_data, expe
             assert response.data.decode() == expected_response
 
 def test_execute_joke():
+    """
+    Test the joke execution endpoint to ensure it returns the correct joke string.
+    """
     with mock.patch("sk_python_flask_chatgpt_plugin.app.execute_semantic_function") as mock_execute:
         mock_execute.return_value = "Test joke"
         with app.test_client() as client:
