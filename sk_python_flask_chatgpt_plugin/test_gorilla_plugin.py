@@ -1,3 +1,10 @@
+"""
+Tests for GorillaPlugin class.
+
+This file contains test cases for the GorillaPlugin class to ensure it properly handles setting
+the working directory, collecting environment information, and implementing utility
+functions necessary for the Gorilla CLI plugin functionality.
+"""
 from unittest import mock
 
 import pytest
@@ -10,6 +17,11 @@ def test_set_working_directory():
     assert gorilla_plugin._working_directory == '/test/directory'
 
 def test_collect_environment_info():
+    """
+    Test collecting the environment information within the working directory.
+
+    Mocks the os.walk function to simulate the file structure and asserts the collected environment information is stored correctly.
+    """
     gorilla_plugin = GorillaPlugin()
     gorilla_plugin._working_directory = '/test/directory'
     with mock.patch('os.walk') as mocked_walk:
